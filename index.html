@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        /* Custom styles for radio buttons */
+        input[type="radio"] {
+            accent-color: #3b82f6;
+            /* Blue color for radio buttons */
+        }
+    </style>
+</head>
+
+<body class="bg-white">
+    <div class="w-full max-w-[1280px] mx-auto px-4 pt-12">
+        <!-- Sorting Dropdown -->
+        <div class="flex items-center justify-end gap-2 sm:gap-4 pb-4">
+            <label class="text-sm md:text-base">Sort by:</label>
+            <select id="sort" class="border border-gray-500 p-2 text-sm md:text-base" onchange="sortProducts()">
+                <option value="default">Default</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="rating-asc">Rating: Low to High</option>
+                <option value="rating-desc">Rating: High to Low</option>
+            </select>
+
+        </div>
+        <div class="container flex flex-col md:flex-row gap-4 w-full">
+            <!-- Sidebar for Filters -->
+            <aside class="w-full md:w-1/4 bg-white">
+                <p class="text-lg lg:text-xl font-semibold border-b pb-2">Filter by:</p>
+                <!-- Category Filter -->
+                <div class="mb-6">
+                    <p class="text-md lg:text-lg font-medium py-2">Category</p>
+                    <div class="flex flex-col gap-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="category" value="All" class="mr-2" checked
+                                onchange="filterProducts()">
+                            All
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="category" value="Beauty" class="mr-2" onchange="filterProducts()">
+                            Beauty
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="category" value="Fragrances" class="mr-2"
+                                onchange="filterProducts()">
+                            Fragrances
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="category" value="Furniture" class="mr-2"
+                                onchange="filterProducts()">
+                            Furniture
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="category" value="Groceries" class="mr-2"
+                                onchange="filterProducts()">
+                            Groceries
+                        </label>
+                    </div>
+                </div>
+                <!-- Price Range Filter -->
+                <div>
+                    <p class="text-md lg:text-lg font-medium py-2">Price</p>
+                    <div class="flex flex-col gap-2">
+                        <input type="number" id="minPrice" class="w-full border p-2 text-sm lg:text-base"
+                            placeholder="Min price" oninput="filterProducts()">
+                        <input type="number" id="maxPrice" class="w-full border p-2 text-sm lg:text-base"
+                            placeholder="Max price" oninput="filterProducts()">
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="w-full md:w-3/4">
+                <!-- Product Grid -->
+                <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Products will be dynamically inserted here -->
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        // Product Data
+        const products = [
+            {
+                name: "Essence Mascara Lash Princess",
+                brand: "Essence",
+                price: 9.99,
+                rating: 4.94,
+                stock: 5,
+                category: "Beauty",
+                tags: ["beauty", "mascara"],
+                image: "https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/thumbnail.png"
+            },
+            {
+                name: "Eyeshadow Palette with Mirror",
+                brand: "Glamour Beauty",
+                price: 19.99,
+                rating: 3.28,
+                stock: 44,
+                category: "Beauty",
+                tags: ["beauty", "eyeshadow"],
+                image: "https://cdn.dummyjson.com/products/images/beauty/Eyeshadow%20Palette%20with%20Mirror/thumbnail.png"
+            },
+            {
+                name: "Powder Canister",
+                brand: "Velvet Touch",
+                price: 14.89,
+                rating: 3.82,
+                stock: 59,
+                category: "Beauty",
+                tags: ["beauty", "face powder"],
+                image: "https://cdn.dummyjson.com/products/images/beauty/Powder%20Canister/thumbnail.png"
+            },
+            {
+                name: "Red Lipstick",
+                brand: "Chic Cosmetics",
+                price: 12.99,
+                rating: 2.51,
+                stock: 68,
+                category: "Beauty",
+                tags: ["beauty", "lipstick"],
+                image: "https://cdn.dummyjson.com/products/images/beauty/Red%20Lipstick/thumbnail.png"
+            }
+        ];
+
+        // Function to render products
+        function renderProducts(productsToRender) {
+            const productGrid = document.getElementById('productGrid');
+            productGrid.innerHTML = ''; // Clear existing products
+
+            if (productsToRender.length === 0) {
+                productGrid.innerHTML = `
+            <div class="col-span-full text-center py-10 text-gray-500 text-lg font-semibold">
+                No products found
+            </div>
+        `;
+                return;
+            }
+
+            productsToRender.forEach(product => {
+                const productCard = `
+                    <div class="bg-white p-4 shadow-lg">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-contain">
+                        <p class="font-bold text-lg md:text-xl mt-2">${product.name}</p>
+                        ${product.brand ? `<p class="text-gray-600 text-sm md:text-base">${product.brand}</p>` : ''}
+                        <p class="text-md md:text-lg font-semibold">$${product.price.toFixed(2)}</p>
+                        <p class="text-sm md:text-base text-base">${product.rating.toFixed(2)}⭐</p>
+                        <p class="text-sm md:text-base text-gray-500">${product.stock} in stock</p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            ${product.tags.map(tag => `<p class="bg-yellow-400 px-2 py-1 rounded-full text-xs md:text-sm">${tag}</p>`).join('')}
+                        </div>
+                    </div>
+                `;
+                productGrid.innerHTML += productCard;
+            });
+        }
+
+        // Function to filter products
+        function filterProducts() {
+            const selectedCategory = document.querySelector('input[name="category"]:checked').value;
+            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+
+            const filteredProducts = products.filter(product => {
+                // Filter by category
+                const categoryMatch = selectedCategory === 'All' || product.category === selectedCategory;
+                // Filter by price
+                const priceMatch = product.price >= minPrice && product.price <= maxPrice;
+                return categoryMatch && priceMatch;
+            });
+
+            sortProducts();
+
+        }
+
+        // Function to sort products
+        function sortProducts() {
+            const sortOption = document.getElementById('sort').value;
+            const selectedCategory = document.querySelector('input[name="category"]:checked').value;
+            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+
+            let filtered = products.filter(product => {
+                const categoryMatch = selectedCategory === 'All' || product.category === selectedCategory;
+                const priceMatch = product.price >= minPrice && product.price <= maxPrice;
+                return categoryMatch && priceMatch;
+            });
+
+            if (sortOption === 'price-asc') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortOption === 'price-desc') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (sortOption === 'rating-asc') {
+                filtered.sort((a, b) => a.rating - b.rating);
+            } else if (sortOption === 'rating-desc') {
+                filtered.sort((a, b) => b.rating - a.rating);
+            }
+
+            renderProducts(filtered);
+        }
+
+
+
+        // Initial render
+        renderProducts(products);
+    </script>
+</body>
+
+</html>
